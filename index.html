@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IP Tracking Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #result { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>IP Tracking Demo</h1>
+    <div id="result">Collecting your IP address...</div>
+
+    <script>
+        // Собираем данные клиента
+        const clientData = {
+            userAgent: navigator.userAgent,
+            screenRes: `${screen.width}x${screen.height}`,
+            language: navigator.language,
+            cookies: navigator.cookieEnabled,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timestamp: new Date().toISOString()
+        };
+
+        // Отправляем данные на сервер
+        fetch('https://localhost:7065/api/tracking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(clientData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').innerHTML = `
+                <strong>Your IP:</strong> ${data.ip}<br>
+                <strong>Location:</strong> ${data.country || 'Unknown'}, ${data.city || 'Unknown'}<br>
+                <strong>ISP:</strong> ${data.isp || 'Unknown'}
+            `;
+        });
+    </script>
+
+    <!-- Трекинг-пиксель -->
+    <img src="1.png" alt="" style="display:none;">
+</body>
+</html>
