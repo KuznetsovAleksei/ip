@@ -1,44 +1,173 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IP Tracking Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        #result { margin-top: 20px; padding: 10px; background: #f0f0f0; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #FFD1DC;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            touch-action: manipulation;
+        }
+        
+        #heart-container {
+            position: relative;
+            width: 60vw;
+            height: 60vw;
+            max-width: 250px;
+            max-height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #heart {
+            position: relative;
+            width: 90%;
+            height: 110%;
+            animation: beat 1.5s ease-in-out infinite, appear 2s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.1);
+        }
+        
+        #heart:before, #heart:after {
+            position: absolute;
+            content: "";
+            width: 50%;
+            height: 80%;
+            background: #FF6B8B;
+            border-radius: 50% 50% 0 0;
+        }
+        
+        #heart:before {
+            left: 50%;
+            top: 0;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+        
+        #heart:after {
+            left: 0;
+            top: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+        
+        #message {
+            position: absolute;
+            text-align: center;
+            color: white;
+            font-size: 5vw;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            opacity: 0;
+            animation: textAppear 1s ease-out 2s forwards;
+            width: 70%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            line-height: 1.3;
+        }
+        
+        .falling-heart {
+            position: absolute;
+            color: #FF6B8B;
+            font-size: 5vw;
+            top: -20px;
+            animation: falling linear forwards;
+            opacity: 0.6;
+            z-index: 1;
+        }
+        
+        @keyframes beat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            40% { transform: scale(1); }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes appear {
+            0% { opacity: 0; transform: scale(0.1); }
+            80% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes textAppear {
+            0% { opacity: 0; transform: translate(-50%, -30px); }
+            100% { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        
+        @keyframes falling {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        /* Адаптация для очень маленьких экранов */
+        @media (max-height: 600px) {
+            #message {
+                font-size: 4.5vw;
+                line-height: 1.2;
+            }
+            #heart-container {
+                height: 70vw;
+            }
+        }
+
+        /* Адаптация для альбомной ориентации */
+        @media (orientation: landscape) {
+            #heart-container {
+                width: 60vh;
+                height: 60vh;
+                max-width: 60vh;
+                max-height: 60vh;
+            }
+            #message {
+                font-size: 3.5vh;
+            }
+            .falling-heart {
+                font-size: 4vh;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>IP Tracking Demo</h1>
-    <div id="result">Collecting your IP address...</div>
+    <div id="heart-container">
+        <div id="heart"></div>
+        <div id="message">Марго,<br>ты самая милая!</div>
+    </div>
 
     <script>
-        // Собираем данные клиента
-        const clientData = {
-            userAgent: navigator.userAgent,
-            screenRes: `${screen.width}x${screen.height}`,
-            language: navigator.language,
-            cookies: navigator.cookieEnabled,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            timestamp: new Date().toISOString()
+        function createFallingHearts() {
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.innerHTML = '❤';
+                heart.classList.add('falling-heart');
+                
+                heart.style.left = Math.random() * 100 + 'vw';
+                const duration = Math.random() * 3 + 2;
+                heart.style.animationDuration = duration + 's';
+                const size = Math.random() * 3 + 2;
+                heart.style.fontSize = size + 'vw';
+                
+                document.body.appendChild(heart);
+                
+                setTimeout(() => {
+                    heart.remove();
+                }, duration * 1000);
+            }, 300);
+        }
+        
+        window.onload = function() {
+            createFallingHearts();
         };
-
-        // Отправляем данные на сервер
-        fetch('https://localhost:7065/api/tracking', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(clientData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('result').innerHTML = `
-                <strong>Your IP:</strong> ${data.ip}<br>
-                <strong>Location:</strong> ${data.country || 'Unknown'}, ${data.city || 'Unknown'}<br>
-                <strong>ISP:</strong> ${data.isp || 'Unknown'}
-            `;
-        });
     </script>
-
-    <!-- Трекинг-пиксель -->
-    <img src="1.png" alt="" style="display:none;">
 </body>
 </html>
